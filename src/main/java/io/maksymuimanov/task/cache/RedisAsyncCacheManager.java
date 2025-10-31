@@ -45,9 +45,10 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
             return commands.get(key)
                     .toCompletableFuture()
                     .thenApply(value -> {
+                        if (value == null) return Optional.empty();
                         try {
                             T t = objectMapper.readValue(value, clazz);
-                            return Optional.of(t);
+                            return Optional.ofNullable(t);
                         } catch (Exception e) {
                             return Optional.empty();
                         }

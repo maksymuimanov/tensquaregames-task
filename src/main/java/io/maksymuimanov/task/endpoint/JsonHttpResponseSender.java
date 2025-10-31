@@ -15,9 +15,8 @@ public class JsonHttpResponseSender implements HttpResponseSender {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void send(ChannelHandlerContext context, FullHttpRequest request, HttpResponseStatus status, Object response) {
+    public void send(ChannelHandlerContext context, Object response, HttpResponseStatus status, boolean keepAlive) {
         try {
-            boolean keepAlive = HttpUtil.isKeepAlive(request);
             byte[] jsonBuffer = objectMapper.writeValueAsBytes(response);
             ByteBuf responseBuffer = Unpooled.wrappedBuffer(jsonBuffer);
             HttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, responseBuffer);

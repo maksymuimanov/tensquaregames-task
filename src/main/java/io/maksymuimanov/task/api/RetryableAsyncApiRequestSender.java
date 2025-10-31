@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<String> {
-    public static final int DEFAULT_RETRY_COUNT = 3;
-    public static final Duration DEFAULT_RETRY_DELAY = Duration.ofMillis(500);
+    public static final int DEFAULT_RETRY_COUNT = 2;
+    public static final Duration DEFAULT_RETRY_DELAY = Duration.ofMillis(250);
     public static final int HTTP_OK_STATUS = 200;
     public static final int HTTP_SUCCESS_CODE_LIMIT = 300;
     private final int retryCount;

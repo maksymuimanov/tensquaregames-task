@@ -39,3 +39,12 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.register<Tar>("distTarGz") {
+    archiveClassifier.set("sources")
+    compression = Compression.GZIP
+    from(projectDir) {
+        include("src/**", "build.gradle.kts", "settings.gradle.kts", "gradlew", "gradlew.bat", "gradle/**", "README.md")
+        exclude("**/build/**", "**/.gradle/**", ".idea/**", "**/.git/**")
+    }
+}
