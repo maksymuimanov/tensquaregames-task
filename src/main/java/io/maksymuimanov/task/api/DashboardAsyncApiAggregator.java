@@ -2,6 +2,7 @@ package io.maksymuimanov.task.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.maksymuimanov.task.dto.DashboardResponse;
+import io.maksymuimanov.task.exception.ApiAggregationException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.concurrent.CompletableFuture;
@@ -15,10 +16,14 @@ public class DashboardAsyncApiAggregator implements AsyncApiAggregator<Dashboard
 
     @Override
     public CompletableFuture<DashboardResponse> aggregate() {
-        CompletableFuture<JsonNode> weatherResponse = asyncApiFetcher.fetch(WEATHER_API_URL);
-        CompletableFuture<JsonNode> factResponse = asyncApiFetcher.fetch(FACTS_API_URL);
-        CompletableFuture<JsonNode> ipResponse = asyncApiFetcher.fetch(IP_API_URL);
-        return CompletableFuture.allOf(weatherResponse, ipResponse, factResponse)
-                .thenApply(v -> new DashboardResponse(weatherResponse.join(), factResponse.join(), ipResponse.join()));
+        try {
+            CompletableFuture<JsonNode> weatherResponse = asyncApiFetcher.fetch(WEATHER_API_URL);
+            CompletableFuture<JsonNode> factResponse = asyncApiFetcher.fetch(FACTS_API_URL);
+            CompletableFuture<JsonNode> ipResponse = asyncApiFetcher.fetch(IP_API_URL);
+            return CompletableFuture.allOf(weatherResponse, ipResponse, factResponse)
+                    .thenApply(v -> new DashboardResponse(weatherResponse.join(), factResponse.join(), ipResponse.join()));
+        } catch (Exception e) {
+            throw new ApiAggregationException(e);
+        }
     }
 }
