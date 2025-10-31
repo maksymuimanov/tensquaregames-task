@@ -6,7 +6,6 @@ import io.lettuce.core.api.async.RedisAsyncCommands;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class RedisAsyncCacheManager implements AsyncCacheManager {
     public static final String DEFAULT_REDIS_URL = "redis://localhost:6379";

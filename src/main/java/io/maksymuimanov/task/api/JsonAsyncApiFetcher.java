@@ -3,6 +3,7 @@ package io.maksymuimanov.task.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,20 +12,13 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
+@RequiredArgsConstructor
 public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
     protected static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .executor(Executors.newVirtualThreadPerTaskExecutor())
             .build();
     private final ObjectMapper objectMapper;
-
-    public JsonAsyncApiFetcher() {
-        this(new ObjectMapper());
-    }
-
-    public JsonAsyncApiFetcher(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public CompletableFuture<JsonNode> fetch(String url) {
