@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("application")
 }
 
 group = "io.maksymuimanov.task"
@@ -47,4 +48,8 @@ tasks.register<Tar>("distTarGz") {
         include("src/**", "build.gradle.kts", "settings.gradle.kts", "gradlew", "gradlew.bat", "gradle/**", "README.md")
         exclude("**/build/**", "**/.gradle/**", ".idea/**", "**/.git/**")
     }
+}
+
+application {
+    mainClass = "io.maksymuimanov.task.Main"
 }
