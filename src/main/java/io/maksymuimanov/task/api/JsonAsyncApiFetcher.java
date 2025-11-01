@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.maksymuimanov.task.exception.ApiFetchingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -29,26 +29,26 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
             .connectTimeout(DEFAULT_CONNECT_TIMEOUT)
             .build();
     public static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofSeconds(5);
-    public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
+    @NonNull
     private final HttpClient httpClient;
+    @NonNull
     private final ObjectMapper objectMapper;
+    @NonNull
     private final AsyncApiRequestSender<String> requestSender;
 
-    public JsonAsyncApiFetcher(ObjectMapper objectMapper, AsyncApiRequestSender<String> requestSender) {
+    public JsonAsyncApiFetcher(@NonNull ObjectMapper objectMapper,
+                               @NonNull AsyncApiRequestSender<String> requestSender) {
         this(DEFAULT_HTTP_CLIENT, objectMapper, requestSender);
     }
 
     @Override
-    public CompletableFuture<JsonNode> fetch(String url) {
+    @NonNull
+    public CompletableFuture<JsonNode> fetch(@NonNull String url) {
         try {
             URI uri = URI.create(url);
             HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .GET()
                     .timeout(DEFAULT_REQUEST_TIMEOUT);
-            String correlationId = MDC.get("correlationId");
-            if (correlationId != null) {
-                builder.header(CORRELATION_ID_HEADER, correlationId);
-            }
             HttpRequest httpRequest = builder.build();
             log.info("Fetching external API: uri={}", uri);
             HttpResponse.BodyHandler<String> stringBodyHandler = HttpResponse.BodyHandlers.ofString();
@@ -61,6 +61,7 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
         }
     }
 
+    @NonNull
     private JsonNode parseJson(String body) {
         try {
             return objectMapper.readTree(body);

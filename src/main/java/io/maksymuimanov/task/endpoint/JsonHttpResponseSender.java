@@ -10,14 +10,16 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JsonHttpResponseSender implements HttpResponseSender {
+    @NonNull
     private final ObjectMapper objectMapper;
 
     @Override
-    public void send(ChannelHandlerContext context, Object response, HttpResponseStatus status, boolean keepAlive) {
+    public void send(@NonNull ChannelHandlerContext context, @NonNull Object response, @NonNull HttpResponseStatus status, boolean keepAlive) {
         try {
             byte[] jsonBuffer = objectMapper.writeValueAsBytes(response);
             ByteBuf responseBuffer = Unpooled.wrappedBuffer(jsonBuffer);

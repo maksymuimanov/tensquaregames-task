@@ -3,6 +3,7 @@ package io.maksymuimanov.task.api;
 import io.maksymuimanov.task.exception.ApiRequestSendingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -21,6 +22,7 @@ public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<Str
     public static final int HTTP_OK_STATUS = 200;
     public static final int HTTP_SUCCESS_CODE_LIMIT = 300;
     private final int retryCount;
+    @NonNull
     private final Duration retryDelay;
 
     public RetryableAsyncApiRequestSender() {
@@ -28,13 +30,15 @@ public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<Str
     }
 
     @Override
-    public CompletableFuture<HttpResponse<String>> send(HttpClient httpClient, HttpRequest request, HttpResponse.BodyHandler<String> handler) {
+    @NonNull
+    public CompletableFuture<HttpResponse<String>> send(@NonNull HttpClient httpClient, @NonNull HttpRequest request, HttpResponse.@NonNull BodyHandler<String> handler) {
         URI uri = request.uri();
         log.debug("Sending HTTP request: method={}, uri={}", request.method(), uri);
         return send(httpClient, request, handler, retryCount);
     }
 
-    private CompletableFuture<HttpResponse<String>> send(HttpClient httpClient, HttpRequest request, HttpResponse.BodyHandler<String> handler, int retriesLeft) {
+    @NonNull
+    private CompletableFuture<HttpResponse<String>> send(@NonNull HttpClient httpClient, @NonNull HttpRequest request, HttpResponse.@NonNull BodyHandler<String> handler, int retriesLeft) {
         return httpClient.sendAsync(request, handler)
                 .thenCompose(response -> {
                     int code = response.statusCode();
@@ -59,7 +63,8 @@ public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<Str
                 });
     }
 
-    private CompletableFuture<HttpResponse<String>> retry(HttpClient httpClient, HttpRequest request, HttpResponse.BodyHandler<String> handler, int retriesLeft) {
+    @NonNull
+    private CompletableFuture<HttpResponse<String>> retry(@NonNull HttpClient httpClient, @NonNull HttpRequest request, HttpResponse.@NonNull BodyHandler<String> handler, int retriesLeft) {
         Executor delayedExecutor = CompletableFuture.delayedExecutor(retryDelay.toMillis(), TimeUnit.MILLISECONDS);
         return CompletableFuture.supplyAsync(() -> null, delayedExecutor)
                 .thenCompose(v -> send(httpClient, request, handler, retriesLeft - 1));

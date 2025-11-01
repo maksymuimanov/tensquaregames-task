@@ -5,6 +5,7 @@ import io.maksymuimanov.task.dto.DashboardResponse;
 import io.maksymuimanov.task.exception.ApiAggregationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -14,9 +15,11 @@ public class DashboardAsyncApiAggregator implements AsyncApiAggregator<Dashboard
     public static final String WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.107883&longitude=17.038538&current_weather=true";
     public static final String FACTS_API_URL = "https://uselessfacts.jsph.pl/api/v2/facts/random";
     public static final String IP_API_URL = "https://api.ipify.org/?format=json";
+    @NonNull
     private final AsyncApiFetcher<JsonNode> asyncApiFetcher;
 
     @Override
+    @NonNull
     public CompletableFuture<DashboardResponse> aggregate() {
         try {
             long start = System.currentTimeMillis();

@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
@@ -15,10 +16,11 @@ import java.util.Map;
 public class SimpleHttpEndpointDirector implements HttpEndpointDirector {
     public static final ErrorResponse UNEXPECTED_SERVER_ERROR_MESSAGE = new ErrorResponse("Unexpected server error");
     private static final ErrorResponse NOT_FOUND_MESSAGE = new ErrorResponse("Not Found");
+    @NonNull
     private final Map<HttpEndpoint, AsyncHttpEndpointProcessor> endpointHandlers;
 
     @Override
-    public void direct(ChannelHandlerContext context, FullHttpRequest request, HttpResponseSender responseSender) {
+    public void direct(@NonNull ChannelHandlerContext context, @NonNull FullHttpRequest request, @NonNull HttpResponseSender responseSender) {
         try {
             boolean keepAlive = HttpUtil.isKeepAlive(request);
             String path = new QueryStringDecoder(request.uri()).path();
