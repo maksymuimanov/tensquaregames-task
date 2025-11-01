@@ -9,9 +9,11 @@ import io.maksymuimanov.task.exception.HttpEndpointProcessionException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpointProcessor {
     public static final String DASHBOARD_ENDPOINT_PATH = "/api/dashboard";
     public static final String DASHBOARD_CACHE_KEY = "dashboard";
@@ -35,9 +37,13 @@ public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpoint
     @Override
     public CompletableFuture<Void> process(ChannelHandlerContext context, HttpResponseSender responseSender, boolean keepAlive) {
         try {
+            log.info("Processing dashboard endpoint");
             return apiAggregator.aggregate()
-                    .exceptionallyCompose(ex -> cacheManager.get(DASHBOARD_CACHE_KEY, DashboardResponse.class)
-                            .thenApply(optional -> optional.orElse(null)))
+                    .exceptionallyCompose(ex -> {
+                        log.warn("Aggregation failed, attempting to use cached dashboard: {}", ex.getMessage());
+                        return cacheManager.get(DASHBOARD_CACHE_KEY, DashboardResponse.class)
+                                .thenApply(optional -> optional.orElse(null));
+                    })
                     .thenCompose(response -> {
                         if (response == null) return CompletableFuture.completedFuture(null);
                         return cacheManager.put(DASHBOARD_CACHE_KEY, response)
@@ -45,16 +51,20 @@ public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpoint
                     })
                     .thenAccept(response -> {
                         if (response != null) {
+                            log.info("Dashboard processed successfully");
                             responseSender.send(context, response, HttpResponseStatus.OK, keepAlive);
                         } else {
+                            log.error("Dashboard processing failed: no data available");
                             responseSender.send(context, FAILED_TO_FETCH_DATA_MESSAGE, HttpResponseStatus.INTERNAL_SERVER_ERROR, keepAlive);
                         }
                     })
                     .exceptionally(ex -> {
+                        log.error("Unexpected error while processing dashboard", ex);
                         responseSender.send(context, UNEXPECTED_SERVER_ERROR_MESSAGE, HttpResponseStatus.INTERNAL_SERVER_ERROR, keepAlive);
                         return null;
                     });
         } catch (Exception e) {
+            log.error("Synchronous error in dashboard processing", e);
             throw new HttpEndpointProcessionException(e);
         }
     }

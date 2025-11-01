@@ -21,12 +21,13 @@ public class ServerEndpointChannelInboundHandler extends SimpleChannelInboundHan
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
+        log.info("Received request from client: method={}, uri={}", msg.method(), msg.uri());
         endpointDirector.direct(ctx, msg, responseSender);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Unhandled exception", cause);
+        log.error("Unhandled exception in channel pipeline", cause);
         responseSender.send(ctx, INTERNAL_SERVER_ERROR_MESSAGE, HttpResponseStatus.INTERNAL_SERVER_ERROR, false);
     }
 }

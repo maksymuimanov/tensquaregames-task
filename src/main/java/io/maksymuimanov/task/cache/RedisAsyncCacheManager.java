@@ -5,11 +5,13 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.maksymuimanov.task.exception.CacheManagingException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 public class RedisAsyncCacheManager implements AsyncCacheManager {
     public static final String DEFAULT_REDIS_URL = "redis://localhost:6379";
     public static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
@@ -37,6 +39,7 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
         this.commands = this.connection.async();
         this.objectMapper = objectMapper;
         this.ttl = ttl;
+        log.info("Initialized Redis cache manager with TTL={}s", ttl.toSeconds());
     }
 
     @Override
@@ -45,15 +48,21 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
             return commands.get(key)
                     .toCompletableFuture()
                     .thenApply(value -> {
-                        if (value == null) return Optional.empty();
+                        if (value == null) {
+                            log.debug("Cache miss: key={}", key);
+                            return Optional.empty();
+                        }
                         try {
                             T t = objectMapper.readValue(value, clazz);
+                            log.debug("Cache hit: key={}", key);
                             return Optional.ofNullable(t);
                         } catch (Exception e) {
+                            log.warn("Failed to deserialize cache value for key={}, returning empty", key);
                             return Optional.empty();
                         }
                     });
         } catch (Exception e) {
+            log.error("Cache get failed: key={}", key, e);
             throw new CacheManagingException(e);
         }
     }
@@ -65,13 +74,20 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
             if (ttl.isPositive()) {
                 return commands.setex(key, ttl.toSeconds(), jsonValue)
                         .toCompletableFuture()
-                        .thenApply(v -> null);
+                        .thenApply(v -> {
+                            log.debug("Cache setex: key={}, ttl={}s", key, ttl.toSeconds());
+                            return null;
+                        });
             } else {
                 return commands.set(key, jsonValue)
                         .toCompletableFuture()
-                        .thenApply(v -> null);
+                        .thenApply(v -> {
+                            log.debug("Cache set: key={}", key);
+                            return null;
+                        });
             }
         } catch (Exception e) {
+            log.error("Cache put failed: key={}", key, e);
             throw new CacheManagingException(e);
         }
     }
@@ -79,11 +95,14 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
     @Override
     public void close() {
         try {
+            log.info("Closing Redis cache connection");
             this.connection.close();
         } catch (Exception e) {
+            log.error("Failed to close Redis connection", e);
             throw new CacheManagingException(e);
         } finally {
             this.redisClient.shutdown();
+            log.info("Redis client shutdown issued");
         }
     }
 }

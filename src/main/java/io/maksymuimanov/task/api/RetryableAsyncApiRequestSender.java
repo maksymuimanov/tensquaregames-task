@@ -4,6 +4,7 @@ import io.maksymuimanov.task.exception.ApiRequestSendingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -28,6 +29,8 @@ public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<Str
 
     @Override
     public CompletableFuture<HttpResponse<String>> send(HttpClient httpClient, HttpRequest request, HttpResponse.BodyHandler<String> handler) {
+        URI uri = request.uri();
+        log.debug("Sending HTTP request: method={}, uri={}", request.method(), uri);
         return send(httpClient, request, handler, retryCount);
     }
 
@@ -36,19 +39,22 @@ public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<Str
                 .thenCompose(response -> {
                     int code = response.statusCode();
                     if (code >= HTTP_OK_STATUS && code < HTTP_SUCCESS_CODE_LIMIT) {
+                        log.info("Received successful response: uri={}, status={}", request.uri(), code);
                         return CompletableFuture.completedFuture(response);
                     } else if (retriesLeft > 0) {
-                        log.warn("Request failed ({}), retrying... ({} left)", code, retriesLeft);
+                        log.warn("Request to {} failed (status={}), retrying... ({} left)", request.uri(), code, retriesLeft);
                         return retry(httpClient, request, handler, retriesLeft);
                     } else {
+                        log.error("Request to {} failed with status={} after retries", request.uri(), code);
                         return CompletableFuture.failedFuture(new ApiRequestSendingException("Request failed with status code: " + code));
                     }
                 })
                 .exceptionallyCompose(ex -> {
                     if (retriesLeft > 0) {
-                        log.warn("Request error: {}, retrying... ({} left)", ex.getMessage(), retriesLeft);
+                        log.warn("Request to {} error: {}, retrying... ({} left)", request.uri(), ex.getMessage(), retriesLeft);
                         return retry(httpClient, request, handler, retriesLeft);
                     }
+                    log.error("Request to {} failed with error after retries", request.uri(), ex);
                     return CompletableFuture.failedFuture(ex);
                 });
     }

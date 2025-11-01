@@ -12,10 +12,12 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @RequiredArgsConstructor
 public class SimpleNettyServer implements NettyServer {
     public static final int DEFAULT_SERVER_PORT = 8080;
@@ -38,8 +40,10 @@ public class SimpleNettyServer implements NettyServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
+            log.info("Starting Netty HTTP server on port={} (readTimeout={}ms, writeTimeout={}ms)", port, readTimeout.toMillis(), writeTimeout.toMillis());
             this.start(bossGroup, workerGroup);
         } catch (Exception e) {
+            log.error("Netty server failed to start", e);
             throw new NettyServerException(e);
         } finally {
             this.stop(bossGroup, workerGroup);
@@ -67,13 +71,17 @@ public class SimpleNettyServer implements NettyServer {
                 .childOption(ChannelOption.SO_KEEPALIVE, DEFAULT_SO_KEEP_ALIVE_VALUE);
         ChannelFuture channelFuture = serverBootstrap.bind(port)
                 .sync();
+        log.info("Netty server bound on port={}, awaiting close", port);
         channelFuture.channel()
                 .closeFuture()
                 .sync();
+        log.info("Netty server channel closed");
     }
 
     private void stop(EventLoopGroup bossGroup, EventLoopGroup workerGroup) {
+        log.info("Shutting down Netty event loops");
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
+        log.info("Netty event loops shutdown initiated");
     }
 }
