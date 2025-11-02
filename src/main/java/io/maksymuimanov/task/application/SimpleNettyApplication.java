@@ -18,8 +18,38 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+/**
+ * Boots the asynchronous Netty-based HTTP application by assembling all API,
+ * caching, and endpoint-processing components. Configures the JSON mapper,
+ * Redis cache, non-blocking API clients, and HTTP routing pipeline, then
+ * starts a Netty server that exposes the /api/dashboard endpoint.
+ * <p>
+ * This class is responsible only for wiring components together and managing
+ * application-level lifecycle (startup and shutdown hooks).
+ *
+ * @see NettyApplication
+ * @see ObjectMapper
+ * @see RedisAsyncCacheManager
+ * @see RetryableAsyncApiRequestSender
+ * @see JsonAsyncApiFetcher
+ * @see DashboardAsyncApiAggregator
+ * @see JsonHttpResponseSender
+ * @see DashboardGetAsyncHttpEndpointProcessor
+ * @see SimpleHttpEndpointDirector
+ * @see HttpServerEndpointChannelInboundHandler
+ * @see HttpSocketChannelInitializer
+ * @see SimpleNettyServer
+ */
 @Slf4j
 public class SimpleNettyApplication implements NettyApplication {
+    /**
+     * Initializes all infrastructure components (Redis cache manager,
+     * async API fetcher, retryable HTTP sender, endpoint processors, Netty
+     * handlers) and starts the Netty HTTP server in blocking mode.
+     * <p>
+     * This method performs only construction and wiring - all network and
+     * API operations remain asynchronous at the processor/fetcher layer.
+     */
     @Override
     public void run() {
         log.info("Starting Simple Netty-based application...");
@@ -69,6 +99,12 @@ public class SimpleNettyApplication implements NettyApplication {
         nettyServer.run();
     }
 
+    /**
+     * Registers a JVM shutdown hook that ensures proper cleanup of I/O-bound
+     * components such as Redis connections and background executor threads.
+     *
+     * @param runnable cleanup logic to execute during JVM shutdown
+     */
     private void addShutdownHook(Runnable runnable) {
         Runtime runtime = Runtime.getRuntime();
         Thread hook = new Thread(runnable);

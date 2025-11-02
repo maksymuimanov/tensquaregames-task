@@ -12,14 +12,35 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Handles inbound HTTP requests and delegates them to the appropriate endpoint processor
+ * using {@link HttpEndpointDirector}.
+ * <p>
+ * Acts as the main entry point for all HTTP traffic in the Netty server pipeline.
+ * Logs request details, forwards them to the director for async processing, and
+ * ensures proper error handling for any unexpected exceptions.
+ *
+ * @see SimpleChannelInboundHandler
+ * @see HttpResponseSender
+ * @see HttpEndpointDirector
+ */
 @Slf4j
 @RequiredArgsConstructor
 @ChannelHandler.Sharable
 public class HttpServerEndpointChannelInboundHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+    /** Standard message returned when an internal server error occurs. */
     public static final ErrorResponse INTERNAL_SERVER_ERROR_MESSAGE = new ErrorResponse("Internal server error");
     private final HttpResponseSender responseSender;
     private final HttpEndpointDirector endpointDirector;
 
+    /**
+     * Handles a fully decoded HTTP request.
+     * Logs the method and URI, then delegates processing to the {@link HttpEndpointDirector}.
+     *
+     * @param ctx the Netty channel context
+     * @param msg the incoming full HTTP request
+     * @throws HttpServerEndpointChannelInboundHandlingException if request delegation fails
+     */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
         try {
@@ -30,6 +51,14 @@ public class HttpServerEndpointChannelInboundHandler extends SimpleChannelInboun
         }
     }
 
+    /**
+     * Handles any unhandled exceptions thrown during request processing.
+     * Logs the error and sends a generic {@code 500 Internal Server Error} response.
+     *
+     * @param ctx the channel context for writing the error response
+     * @param cause the root cause of the exception
+     * @throws HttpServerEndpointChannelInboundHandlingException if response sending fails
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         try {

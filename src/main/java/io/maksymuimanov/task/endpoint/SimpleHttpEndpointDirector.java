@@ -11,14 +11,41 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
+/**
+ * Routes incoming HTTP requests to their appropriate asynchronous endpoint processors.
+ * <p>
+ * This class acts as the central dispatcher in the Netty server pipeline,
+ * matching each request’s {@link io.netty.handler.codec.http.HttpMethod} and URI path
+ * against registered {@link AsyncHttpEndpointProcessor}s. It executes the matched
+ * processor asynchronously and ensures proper response handling and error recovery.
+ *
+ * @see HttpEndpointDirector
+ * @see AsyncHttpEndpointProcessor
+ * @see HttpResponseSender
+ * @see HttpEndpoint
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class SimpleHttpEndpointDirector implements HttpEndpointDirector {
+    /** Generic error message used when an unexpected server-side failure occurs. */
     public static final ErrorResponse UNEXPECTED_SERVER_ERROR_MESSAGE = new ErrorResponse("Unexpected server error");
+    /** Error message returned when no matching endpoint is found. */
     public static final ErrorResponse NOT_FOUND_MESSAGE = new ErrorResponse("Not Found");
     @NonNull
     private final Map<HttpEndpoint, AsyncHttpEndpointProcessor> endpointProcessors;
 
+    /**
+     * Directs an incoming HTTP request to the appropriate {@link AsyncHttpEndpointProcessor}.
+     * <p>
+     * Resolves the request path and method, finds the matching endpoint, and delegates
+     * asynchronous execution. If no endpoint matches, a 404 response is sent.
+     * Errors during processing trigger a 500 Internal Server Error response.
+     *
+     * @param context Netty channel context used to send responses
+     * @param request the full HTTP request received by the server
+     * @param responseSender helper for serializing and sending JSON responses
+     * @throws HttpEndpointDirectingException if routing or endpoint execution fails unexpectedly
+     */
     @Override
     public void direct(@NonNull ChannelHandlerContext context, @NonNull FullHttpRequest request, @NonNull HttpResponseSender responseSender) {
         try {

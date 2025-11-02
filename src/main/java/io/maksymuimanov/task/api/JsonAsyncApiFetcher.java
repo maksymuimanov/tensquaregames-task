@@ -17,17 +17,38 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Performs asynchronous HTTP requests to external APIs and parses their responses as JSON.
+ * <p>
+ * This class provides non-blocking API fetching built on top of {@link HttpClient#sendAsync},
+ * using {@link CompletableFuture} for concurrency and {@link ObjectMapper} for JSON parsing.
+ * It is responsible for fetching data from external services (e.g., weather, fact, IP APIs)
+ * and converting raw responses into {@link JsonNode} structures for downstream aggregation.
+ * <p>
+ * The implementation uses configurable timeouts and supports virtual-thread-based
+ * execution through {@link #DEFAULT_HTTP_EXECUTOR}, ensuring high concurrency
+ * and minimal thread blocking.
+ *
+ * @see AsyncApiRequestSender
+ * @see AsyncApiFetcher
+ * @see HttpClient
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
+    /** Default HTTP/2 client version used for non-blocking requests. */
     public static final HttpClient.Version DEFAULT_HTTP_VERSION = HttpClient.Version.HTTP_2;
+    /** Shared executor using virtual threads for concurrent API calls. */
     public static final ExecutorService DEFAULT_HTTP_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
+    /** Default connection timeout for establishing HTTP connections. */
     public static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(3);
+    /** Default HTTP client preconfigured with timeouts and executor. */
     public static final HttpClient DEFAULT_HTTP_CLIENT = HttpClient.newBuilder()
             .version(DEFAULT_HTTP_VERSION)
             .executor(DEFAULT_HTTP_EXECUTOR)
             .connectTimeout(DEFAULT_CONNECT_TIMEOUT)
             .build();
+    /** Default per-request timeout for external API calls. */
     public static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofSeconds(5);
     @NonNull
     private final HttpClient httpClient;
@@ -36,11 +57,29 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
     @NonNull
     private final AsyncApiRequestSender<String> requestSender;
 
+    /**
+     * Constructs a {@code JsonAsyncApiFetcher} using a default {@link HttpClient}
+     * with HTTP/2, virtual threads, and standard timeouts.
+     *
+     * @param objectMapper the mapper used to parse JSON responses
+     * @param requestSender the asynchronous HTTP request sender
+     */
     public JsonAsyncApiFetcher(@NonNull ObjectMapper objectMapper,
                                @NonNull AsyncApiRequestSender<String> requestSender) {
         this(DEFAULT_HTTP_CLIENT, objectMapper, requestSender);
     }
 
+    /**
+     * Sends an asynchronous HTTP GET request to the given URL and parses the response body as JSON.
+     * <p>
+     * If the request fails or the response cannot be parsed, an {@link ApiFetchingException}
+     * is thrown. This method completes the returned {@link CompletableFuture} once the
+     * external response is available and successfully parsed.
+     *
+     * @param url the target API URL
+     * @return a {@link CompletableFuture} containing the parsed {@link JsonNode} response
+     * @throws ApiFetchingException if the API call or JSON parsing fails
+     */
     @Override
     @NonNull
     public CompletableFuture<JsonNode> fetch(@NonNull String url) {
@@ -61,6 +100,15 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
         }
     }
 
+    /**
+     * Parses a raw JSON string response into a {@link JsonNode}.
+     * <p>
+     * Used internally by {@link #fetch(String)} to deserialize HTTP response bodies.
+     *
+     * @param body the raw JSON body as a string
+     * @return the parsed {@link JsonNode} tree
+     * @throws ApiFetchingException if the body cannot be parsed as valid JSON
+     */
     @NonNull
     private JsonNode parseJson(String body) {
         try {

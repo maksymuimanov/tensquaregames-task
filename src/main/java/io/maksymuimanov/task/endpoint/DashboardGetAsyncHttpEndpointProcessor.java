@@ -14,30 +14,71 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Handles asynchronous processing of the {@code GET /api/dashboard} endpoint.
+ * <p>
+ * This processor orchestrates concurrent API aggregation, resilient caching via Redis,
+ * and non-blocking HTTP response delivery through Netty. It first attempts to fetch
+ * live data from multiple APIs and falls back to cached data if an error occurs.
+ *
+ * @see AsyncApiAggregator
+ * @see AsyncCacheManager
+ * @see AsyncHttpEndpointProcessor
+ * @see HttpResponseSender
+ */
 @Slf4j
 public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpointProcessor {
+    /** Endpoint path for the dashboard API. */
     public static final String DASHBOARD_ENDPOINT_PATH = "/api/dashboard";
+    /** Descriptor of the HTTP endpoint handled by this processor. */
     public static final HttpEndpoint DASHBOARD_HTTP_ENDPOINT = new HttpEndpoint(DASHBOARD_ENDPOINT_PATH, HttpMethod.GET);
+    /** Redis key used for caching aggregated dashboard data. */
     public static final String DASHBOARD_CACHE_KEY = "dashboard";
+    /** Generic response returned when all data fetch attempts fail. */
     public static final ErrorResponse FAILED_TO_FETCH_DATA_MESSAGE = new ErrorResponse("Failed to fetch data");
+    /** Generic response returned for unexpected server-side errors. */
     public static final ErrorResponse UNEXPECTED_SERVER_ERROR_MESSAGE = new ErrorResponse("Unexpected server error");
     @NonNull
     private final AsyncApiAggregator<DashboardResponse> apiAggregator;
     @NonNull
     private final AsyncCacheManager cacheManager;
 
+    /**
+     * Creates a new asynchronous dashboard endpoint processor.
+     *
+     * @param cacheManager   asynchronous cache manager for Redis storage
+     * @param apiAggregator  concurrent aggregator fetching data from multiple APIs
+     */
     public DashboardGetAsyncHttpEndpointProcessor(@NonNull AsyncCacheManager cacheManager,
                                                   @NonNull AsyncApiAggregator<DashboardResponse> apiAggregator) {
         this.cacheManager = cacheManager;
         this.apiAggregator = apiAggregator;
     }
 
+    /**
+     * Returns the HTTP endpoint handled by this processor.
+     *
+     * @return descriptor for {@code GET /api/dashboard}
+     */
     @Override
     @NonNull
     public HttpEndpoint getEndpoint() {
         return DASHBOARD_HTTP_ENDPOINT;
     }
 
+    /**
+     * Processes a dashboard request asynchronously.
+     * <p>
+     * Attempts to aggregate data from remote APIs and cache it.
+     * If the aggregation fails, cached data is used as a fallback.
+     * The response is then written back to the client using Netty.
+     *
+     * @param context Netty context for writing the response
+     * @param responseSender component responsible for serializing and sending JSON responses
+     * @param keepAlive whether to keep the connection open after sending
+     * @return a {@link CompletableFuture} completing when the response has been sent
+     * @throws HttpEndpointProcessionException if a fatal synchronous error occurs
+     */
     @Override
     @NonNull
     public CompletableFuture<Void> process(@NonNull ChannelHandlerContext context, @NonNull HttpResponseSender responseSender, boolean keepAlive) {
