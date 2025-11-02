@@ -85,13 +85,14 @@ public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpoint
         try {
             log.info("Processing dashboard endpoint");
             return apiAggregator.aggregate()
-                    .exceptionallyCompose(ex -> {
+                    .handle((response, ex) -> {
+                        if (ex == null) return response;
                         log.warn("Aggregation failed, attempting to use cached dashboard: {}", ex.getMessage());
-                        return cacheManager.get(DASHBOARD_CACHE_KEY, DashboardResponse.class)
-                                .thenApply(optional -> optional.orElse(null));
+                        return null;
                     })
                     .thenCompose(response -> {
-                        if (response == null) return CompletableFuture.completedFuture(null);
+                        if (response == null) return cacheManager.get(DASHBOARD_CACHE_KEY, DashboardResponse.class)
+                                .handle((optional, cacheEx) -> cacheEx == null ? optional.orElse(null) : null);
                         return cacheManager.put(DASHBOARD_CACHE_KEY, response)
                                 .thenApply(v -> response);
                     })
@@ -111,7 +112,7 @@ public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpoint
                     });
         } catch (Exception e) {
             log.error("Something went wrong in dashboard processing: ", e);
-            throw new HttpEndpointProcessionException(e);
+            return CompletableFuture.failedFuture(new HttpEndpointProcessionException(e));
         }
     }
 }

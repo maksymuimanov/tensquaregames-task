@@ -116,7 +116,7 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
                     });
         } catch (Exception e) {
             log.error("Cache get failed: key={}", key, e);
-            throw new CacheManagingException(e);
+            return CompletableFuture.failedFuture(new CacheManagingException(e));
         }
     }
 
@@ -150,7 +150,7 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
             }
         } catch (Exception e) {
             log.error("Cache put failed: key={}", key, e);
-            throw new CacheManagingException(e);
+            return CompletableFuture.failedFuture(new CacheManagingException(e));
         }
     }
 

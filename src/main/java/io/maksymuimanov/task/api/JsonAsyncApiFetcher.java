@@ -96,7 +96,7 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
                     .thenApply(this::parseJson);
         } catch (Exception e) {
             log.error("Failed to fetch external API: url={}", url, e);
-            throw new ApiFetchingException(e);
+            return CompletableFuture.failedFuture(new ApiFetchingException(e));
         }
     }
 

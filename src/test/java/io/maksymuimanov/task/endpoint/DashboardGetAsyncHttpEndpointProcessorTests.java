@@ -3,7 +3,6 @@ package io.maksymuimanov.task.endpoint;
 import io.maksymuimanov.task.api.AsyncApiAggregator;
 import io.maksymuimanov.task.cache.AsyncCacheManager;
 import io.maksymuimanov.task.dto.DashboardResponse;
-import io.maksymuimanov.task.exception.HttpEndpointProcessionException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.awaitility.Awaitility;
@@ -14,6 +13,7 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @SuppressWarnings("unchecked")
 class DashboardGetAsyncHttpEndpointProcessorTests {
@@ -105,6 +105,6 @@ class DashboardGetAsyncHttpEndpointProcessorTests {
     void shouldFailToProcess() {
         Mockito.when(apiAggregator.aggregate()).thenThrow(RuntimeException.class);
 
-        Assertions.assertThrows(HttpEndpointProcessionException.class, () -> dashboardGetAsyncHttpEndpointProcessor.process(context, responseSender, NOT_KEEP_ALIVE));
+        Assertions.assertThrows(CompletionException.class, () -> dashboardGetAsyncHttpEndpointProcessor.process(context, responseSender, NOT_KEEP_ALIVE).join());
     }
 }

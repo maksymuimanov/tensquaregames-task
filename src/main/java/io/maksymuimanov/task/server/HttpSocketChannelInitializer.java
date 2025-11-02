@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class HttpSocketChannelInitializer extends ChannelInitializer<SocketChannel> {
     /** Maximum size of the aggregated HTTP content in bytes. */
-    public static final short DEFAULT_MAXIMUM_CONTENT_LENGTH = Short.MAX_VALUE;
+    public static final int DEFAULT_MAXIMUM_CONTENT_LENGTH = Integer.MAX_VALUE;
     /** Default read timeout duration for incoming requests. */
     public static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
     /** Default write timeout duration for outgoing responses. */

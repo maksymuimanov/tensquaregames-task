@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @SuppressWarnings("unchecked")
 class RedisAsyncCacheManagerTests {
@@ -92,7 +93,7 @@ class RedisAsyncCacheManagerTests {
     void shouldFailToGet() {
         Mockito.when(commands.get(TEST_STRING)).thenThrow(RuntimeException.class);
 
-        Assertions.assertThrows(CacheManagingException.class, () -> redisAsyncCacheManager.get(TEST_STRING, String.class));
+        Assertions.assertThrows(CompletionException.class, () -> redisAsyncCacheManager.get(TEST_STRING, String.class).join());
     }
 
     @Test
@@ -133,7 +134,7 @@ class RedisAsyncCacheManagerTests {
     void shouldFailToPutWithTtl() throws JsonProcessingException {
         Mockito.when(objectMapper.writeValueAsString(TEST_STRING)).thenThrow(RuntimeException.class);
 
-        Assertions.assertThrows(CacheManagingException.class, () -> redisAsyncCacheManager.put(TEST_STRING, TEST_STRING));
+        Assertions.assertThrows(CompletionException.class, () -> redisAsyncCacheManager.put(TEST_STRING, TEST_STRING).join());
     }
 
     @Test

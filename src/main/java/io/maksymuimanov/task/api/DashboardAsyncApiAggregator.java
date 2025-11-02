@@ -63,7 +63,7 @@ public class DashboardAsyncApiAggregator implements AsyncApiAggregator<Dashboard
                     });
         } catch (Exception e) {
             log.error("Dashboard aggregation failed (synchronous)", e);
-            throw new ApiAggregationException(e);
+            return CompletableFuture.failedFuture(new ApiAggregationException(e));
         }
     }
 }

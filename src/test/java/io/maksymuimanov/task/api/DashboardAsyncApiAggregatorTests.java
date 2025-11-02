@@ -2,7 +2,6 @@ package io.maksymuimanov.task.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.maksymuimanov.task.dto.DashboardResponse;
-import io.maksymuimanov.task.exception.ApiAggregationException;
 import io.maksymuimanov.task.exception.ApiFetchingException;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @SuppressWarnings("unchecked")
 class DashboardAsyncApiAggregatorTests {
@@ -58,6 +58,6 @@ class DashboardAsyncApiAggregatorTests {
         Mockito.when(asyncApiFetcher.fetch(DashboardAsyncApiAggregator.FACTS_API_URL)).thenThrow(new ApiFetchingException(new RuntimeException("Test exception")));
         Mockito.when(asyncApiFetcher.fetch(DashboardAsyncApiAggregator.IP_API_URL)).thenReturn(CompletableFuture.completedFuture(ipResponse));
 
-        Assertions.assertThrows(ApiAggregationException.class, () -> asyncApiAggregator.aggregate());
+        Assertions.assertThrows(CompletionException.class, () -> asyncApiAggregator.aggregate().join());
     }
 }

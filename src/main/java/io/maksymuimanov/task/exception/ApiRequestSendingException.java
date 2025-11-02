@@ -18,4 +18,13 @@ public class ApiRequestSendingException extends RuntimeException {
     public ApiRequestSendingException(String message) {
         super(message);
     }
+
+    /**
+     * Constructs a new ApiRequestSendingException with the specified cause.
+     *
+     * @param cause the underlying exception that prevented the API request from being sent
+     */
+    public ApiRequestSendingException(Throwable cause) {
+        super(cause);
+    }
 }
