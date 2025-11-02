@@ -46,10 +46,10 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
     public CompletableFuture<JsonNode> fetch(@NonNull String url) {
         try {
             URI uri = URI.create(url);
-            HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+            HttpRequest httpRequest = HttpRequest.newBuilder(uri)
                     .GET()
-                    .timeout(DEFAULT_REQUEST_TIMEOUT);
-            HttpRequest httpRequest = builder.build();
+                    .timeout(DEFAULT_REQUEST_TIMEOUT)
+                    .build();
             log.info("Fetching external API: uri={}", uri);
             HttpResponse.BodyHandler<String> stringBodyHandler = HttpResponse.BodyHandlers.ofString();
             return requestSender.send(httpClient, httpRequest, stringBodyHandler)
@@ -66,7 +66,7 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
         try {
             return objectMapper.readTree(body);
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse external API JSON body (truncated)");
+            log.error("Failed to parse external API JSON body");
             throw new ApiFetchingException(e);
         }
     }

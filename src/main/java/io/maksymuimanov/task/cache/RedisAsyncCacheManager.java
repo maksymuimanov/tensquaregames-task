@@ -6,7 +6,6 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.maksymuimanov.task.exception.CacheManagingException;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -16,35 +15,30 @@ import java.util.concurrent.CompletableFuture;
 public class RedisAsyncCacheManager implements AsyncCacheManager {
     public static final String DEFAULT_REDIS_URL = "redis://localhost:6379";
     public static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
-    @NonNull
     private final RedisClient redisClient;
-    @NonNull
     private final StatefulRedisConnection<String, String> connection;
-    @NonNull
     private final RedisAsyncCommands<String, String> commands;
-    @NonNull
     private final ObjectMapper objectMapper;
-    @NonNull
     private final Duration ttl;
 
-    public RedisAsyncCacheManager(@NonNull ObjectMapper objectMapper) {
+    public RedisAsyncCacheManager(ObjectMapper objectMapper) {
         this(DEFAULT_REDIS_URL, objectMapper);
     }
 
-    public RedisAsyncCacheManager(@NonNull String url,
-                                  @NonNull ObjectMapper objectMapper) {
+    public RedisAsyncCacheManager(String url,
+                                  ObjectMapper objectMapper) {
         this(url, objectMapper, DEFAULT_TTL);
     }
 
-    public RedisAsyncCacheManager(@NonNull String url,
-                                  @NonNull ObjectMapper objectMapper,
-                                  @NonNull Duration ttl) {
+    public RedisAsyncCacheManager(String url,
+                                  ObjectMapper objectMapper,
+                                  Duration ttl) {
         this(RedisClient.create(url), objectMapper, ttl);
     }
 
-    public RedisAsyncCacheManager(@NonNull RedisClient redisClient,
-                                  @NonNull ObjectMapper objectMapper,
-                                  @NonNull Duration ttl) {
+    public RedisAsyncCacheManager(RedisClient redisClient,
+                                  ObjectMapper objectMapper,
+                                  Duration ttl) {
         this.redisClient = redisClient;
         this.connection = redisClient.connect();
         this.commands = this.connection.async();
@@ -54,8 +48,7 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
     }
 
     @Override
-    @NonNull
-    public <T> CompletableFuture<Optional<T>> get(@NonNull String key, @NonNull Class<T> clazz) {
+    public <T> CompletableFuture<Optional<T>> get(String key, Class<T> clazz) {
         try {
             return commands.get(key)
                     .toCompletableFuture()
@@ -67,7 +60,7 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
                         try {
                             T t = objectMapper.readValue(value, clazz);
                             log.debug("Cache hit: key={}", key);
-                            return Optional.ofNullable(t);
+                            return Optional.of(t);
                         } catch (Exception e) {
                             log.warn("Failed to deserialize cache value for key={}, returning empty", key);
                             return Optional.empty();
@@ -80,15 +73,15 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
     }
 
     @Override
-    @NonNull
-    public CompletableFuture<Void> put(@NonNull String key, Object value) {
+    public CompletableFuture<Void> put(String key, Object value) {
         try {
             String jsonValue = objectMapper.writeValueAsString(value);
             if (ttl.isPositive()) {
-                return commands.setex(key, ttl.toSeconds(), jsonValue)
+                long ttlInSeconds = ttl.toSeconds();
+                return commands.setex(key, ttlInSeconds, jsonValue)
                         .toCompletableFuture()
                         .thenApply(v -> {
-                            log.debug("Cache setex: key={}, ttl={}s", key, ttl.toSeconds());
+                            log.debug("Cache setex: key={}, ttl={}s", key, ttlInSeconds);
                             return null;
                         });
             } else {

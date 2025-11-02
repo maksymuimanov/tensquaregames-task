@@ -40,6 +40,14 @@ public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<Str
     @NonNull
     private CompletableFuture<HttpResponse<String>> send(@NonNull HttpClient httpClient, @NonNull HttpRequest request, HttpResponse.@NonNull BodyHandler<String> handler, int retriesLeft) {
         return httpClient.sendAsync(request, handler)
+                .exceptionallyCompose(ex -> {
+                    if (retriesLeft > 0) {
+                        log.warn("Request to {} error: {}, retrying... ({} left)", request.uri(), ex.getMessage(), retriesLeft);
+                        return retry(httpClient, request, handler, retriesLeft);
+                    }
+                    log.error("Request to {} failed with error after retries", request.uri(), ex);
+                    return CompletableFuture.failedFuture(new ApiRequestSendingException("Request failed with error: " + ex.getMessage()));
+                })
                 .thenCompose(response -> {
                     int code = response.statusCode();
                     if (code >= HTTP_OK_STATUS && code < HTTP_SUCCESS_CODE_LIMIT) {
@@ -52,14 +60,6 @@ public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<Str
                         log.error("Request to {} failed with status={} after retries", request.uri(), code);
                         return CompletableFuture.failedFuture(new ApiRequestSendingException("Request failed with status code: " + code));
                     }
-                })
-                .exceptionallyCompose(ex -> {
-                    if (retriesLeft > 0) {
-                        log.warn("Request to {} error: {}, retrying... ({} left)", request.uri(), ex.getMessage(), retriesLeft);
-                        return retry(httpClient, request, handler, retriesLeft);
-                    }
-                    log.error("Request to {} failed with error after retries", request.uri(), ex);
-                    return CompletableFuture.failedFuture(ex);
                 });
     }
 

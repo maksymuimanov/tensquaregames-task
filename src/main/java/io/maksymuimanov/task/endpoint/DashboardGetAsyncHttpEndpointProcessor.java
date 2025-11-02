@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpointProcessor {
     public static final String DASHBOARD_ENDPOINT_PATH = "/api/dashboard";
+    public static final HttpEndpoint DASHBOARD_HTTP_ENDPOINT = new HttpEndpoint(DASHBOARD_ENDPOINT_PATH, HttpMethod.GET);
     public static final String DASHBOARD_CACHE_KEY = "dashboard";
     public static final ErrorResponse FAILED_TO_FETCH_DATA_MESSAGE = new ErrorResponse("Failed to fetch data");
     public static final ErrorResponse UNEXPECTED_SERVER_ERROR_MESSAGE = new ErrorResponse("Unexpected server error");
@@ -24,20 +25,17 @@ public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpoint
     private final AsyncApiAggregator<DashboardResponse> apiAggregator;
     @NonNull
     private final AsyncCacheManager cacheManager;
-    @NonNull
-    private final HttpEndpoint endpoint;
 
     public DashboardGetAsyncHttpEndpointProcessor(@NonNull AsyncCacheManager cacheManager,
                                                   @NonNull AsyncApiAggregator<DashboardResponse> apiAggregator) {
         this.cacheManager = cacheManager;
         this.apiAggregator = apiAggregator;
-        this.endpoint = new HttpEndpoint(DASHBOARD_ENDPOINT_PATH, HttpMethod.GET);
     }
 
     @Override
     @NonNull
     public HttpEndpoint getEndpoint() {
-        return endpoint;
+        return DASHBOARD_HTTP_ENDPOINT;
     }
 
     @Override
@@ -71,7 +69,7 @@ public class DashboardGetAsyncHttpEndpointProcessor implements AsyncHttpEndpoint
                         return null;
                     });
         } catch (Exception e) {
-            log.error("Synchronous error in dashboard processing", e);
+            log.error("Something went wrong in dashboard processing: ", e);
             throw new HttpEndpointProcessionException(e);
         }
     }

@@ -22,7 +22,6 @@ public class DashboardAsyncApiAggregator implements AsyncApiAggregator<Dashboard
     @NonNull
     public CompletableFuture<DashboardResponse> aggregate() {
         try {
-            long start = System.currentTimeMillis();
             log.info("Starting dashboard aggregation");
             CompletableFuture<JsonNode> weatherResponse = asyncApiFetcher.fetch(WEATHER_API_URL);
             CompletableFuture<JsonNode> factResponse = asyncApiFetcher.fetch(FACTS_API_URL);
@@ -30,11 +29,10 @@ public class DashboardAsyncApiAggregator implements AsyncApiAggregator<Dashboard
             return CompletableFuture.allOf(weatherResponse, ipResponse, factResponse)
                     .thenApply(v -> new DashboardResponse(weatherResponse.join(), factResponse.join(), ipResponse.join()))
                     .whenComplete((r, ex) -> {
-                        long took = System.currentTimeMillis() - start;
                         if (ex != null) {
-                            log.error("Dashboard aggregation failed after {} ms", took, ex);
+                            log.error("Dashboard aggregation failed", ex);
                         } else {
-                            log.info("Dashboard aggregation completed in {} ms", took);
+                            log.info("Dashboard aggregation completed");
                         }
                     });
         } catch (Exception e) {

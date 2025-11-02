@@ -1,4 +1,4 @@
-@NullUnmarked
+@NullMarked
 package io.maksymuimanov.task.cache;
 
-import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.NullMarked;
