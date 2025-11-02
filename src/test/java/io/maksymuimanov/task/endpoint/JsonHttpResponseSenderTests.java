@@ -1,9 +1,7 @@
-package endpoint;
+package io.maksymuimanov.task.endpoint;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.maksymuimanov.task.endpoint.HttpResponseSender;
-import io.maksymuimanov.task.endpoint.JsonHttpResponseSender;
 import io.maksymuimanov.task.exception.HttpResponseSendingException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

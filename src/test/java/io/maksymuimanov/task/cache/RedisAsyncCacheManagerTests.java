@@ -1,4 +1,4 @@
-package cache;
+package io.maksymuimanov.task.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,8 +6,6 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.maksymuimanov.task.cache.AsyncCacheManager;
-import io.maksymuimanov.task.cache.RedisAsyncCacheManager;
 import io.maksymuimanov.task.exception.CacheManagingException;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;

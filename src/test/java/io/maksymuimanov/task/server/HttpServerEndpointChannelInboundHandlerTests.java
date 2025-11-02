@@ -1,9 +1,9 @@
-package server;
+package io.maksymuimanov.task.server;
 
 import io.maksymuimanov.task.endpoint.HttpEndpointDirector;
 import io.maksymuimanov.task.endpoint.HttpResponseSender;
 import io.maksymuimanov.task.exception.HttpServerEndpointChannelInboundHandlingException;
-import io.maksymuimanov.task.server.HttpServerEndpointChannelInboundHandler;
+import io.maksymuimanov.task.util.ReflectionUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import util.ReflectionUtils;
 
 class HttpServerEndpointChannelInboundHandlerTests {
     public static final String CHANNEL_READ_0_METHOD_NAME = "channelRead0";

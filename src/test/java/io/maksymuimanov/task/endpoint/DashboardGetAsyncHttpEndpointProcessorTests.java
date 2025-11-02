@@ -1,11 +1,8 @@
-package endpoint;
+package io.maksymuimanov.task.endpoint;
 
 import io.maksymuimanov.task.api.AsyncApiAggregator;
 import io.maksymuimanov.task.cache.AsyncCacheManager;
 import io.maksymuimanov.task.dto.DashboardResponse;
-import io.maksymuimanov.task.endpoint.AsyncHttpEndpointProcessor;
-import io.maksymuimanov.task.endpoint.DashboardGetAsyncHttpEndpointProcessor;
-import io.maksymuimanov.task.endpoint.HttpResponseSender;
 import io.maksymuimanov.task.exception.HttpEndpointProcessionException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;

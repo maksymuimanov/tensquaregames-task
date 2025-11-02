@@ -1,7 +1,7 @@
-package server;
+package io.maksymuimanov.task.server;
 
 import io.maksymuimanov.task.exception.HttpSocketChannelInitializingException;
-import io.maksymuimanov.task.server.HttpSocketChannelInitializer;
+import io.maksymuimanov.task.util.ReflectionUtils;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import util.ReflectionUtils;
 
 @SuppressWarnings("unchecked")
 class HttpSocketChannelInitializerTests {

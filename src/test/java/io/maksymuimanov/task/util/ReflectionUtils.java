@@ -1,4 +1,4 @@
-package util;
+package io.maksymuimanov.task.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -1,7 +1,5 @@
-package api;
+package io.maksymuimanov.task.api;
 
-import io.maksymuimanov.task.api.AsyncApiRequestSender;
-import io.maksymuimanov.task.api.RetryableAsyncApiRequestSender;
 import io.maksymuimanov.task.exception.ApiRequestSendingException;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;

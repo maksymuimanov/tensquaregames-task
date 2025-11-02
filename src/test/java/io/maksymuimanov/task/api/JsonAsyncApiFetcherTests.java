@@ -1,11 +1,8 @@
-package api;
+package io.maksymuimanov.task.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.maksymuimanov.task.api.AsyncApiFetcher;
-import io.maksymuimanov.task.api.AsyncApiRequestSender;
-import io.maksymuimanov.task.api.JsonAsyncApiFetcher;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

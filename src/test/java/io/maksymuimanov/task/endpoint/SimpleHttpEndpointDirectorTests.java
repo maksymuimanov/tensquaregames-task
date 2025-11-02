@@ -1,7 +1,6 @@
-package endpoint;
+package io.maksymuimanov.task.endpoint;
 
 import io.maksymuimanov.task.dto.HttpEndpoint;
-import io.maksymuimanov.task.endpoint.*;
 import io.maksymuimanov.task.exception.HttpEndpointDirectingException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

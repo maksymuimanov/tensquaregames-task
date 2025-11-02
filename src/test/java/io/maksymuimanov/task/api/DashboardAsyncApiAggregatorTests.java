@@ -1,9 +1,6 @@
-package api;
+package io.maksymuimanov.task.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.maksymuimanov.task.api.AsyncApiAggregator;
-import io.maksymuimanov.task.api.AsyncApiFetcher;
-import io.maksymuimanov.task.api.DashboardAsyncApiAggregator;
 import io.maksymuimanov.task.dto.DashboardResponse;
 import io.maksymuimanov.task.exception.ApiAggregationException;
 import io.maksymuimanov.task.exception.ApiFetchingException;

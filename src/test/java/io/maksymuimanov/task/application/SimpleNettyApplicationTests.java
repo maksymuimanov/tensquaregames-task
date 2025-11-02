@@ -1,7 +1,6 @@
-package application;
+package io.maksymuimanov.task.application;
 
 import com.redis.testcontainers.RedisContainer;
-import io.maksymuimanov.task.application.SimpleNettyApplication;
 import io.maksymuimanov.task.cache.RedisAsyncCacheManager;
 import io.maksymuimanov.task.endpoint.DashboardGetAsyncHttpEndpointProcessor;
 import io.restassured.RestAssured;
