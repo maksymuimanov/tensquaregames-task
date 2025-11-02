@@ -37,6 +37,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.awaitility:awaitility:4.2.0")
+    testImplementation("org.testcontainers:testcontainers:2.0.1")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.3")
+    testImplementation("com.redis:testcontainers-redis:2.2.2")
+    testImplementation("io.rest-assured:rest-assured:5.5.6")
 }
 
 tasks.test {

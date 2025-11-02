@@ -8,9 +8,12 @@ import io.maksymuimanov.task.cache.RedisAsyncCacheManager;
 import io.maksymuimanov.task.dto.DashboardResponse;
 import io.maksymuimanov.task.dto.HttpEndpoint;
 import io.maksymuimanov.task.endpoint.*;
+import io.maksymuimanov.task.server.HttpServerEndpointChannelInboundHandler;
+import io.maksymuimanov.task.server.HttpSocketChannelInitializer;
 import io.maksymuimanov.task.server.NettyServer;
-import io.maksymuimanov.task.server.ServerEndpointChannelInboundHandler;
 import io.maksymuimanov.task.server.SimpleNettyServer;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -40,9 +43,11 @@ public class SimpleNettyApplication implements NettyApplication {
         log.debug("Initializing SimpleHttpEndpointDirector");
         HttpEndpointDirector endpointDirector = new SimpleHttpEndpointDirector(endpointHandlers);
         log.debug("Initializing ServerEndpointChannelInboundHandler");
-        ServerEndpointChannelInboundHandler serverEndpointHandler = new ServerEndpointChannelInboundHandler(responseSender, endpointDirector);
+        HttpServerEndpointChannelInboundHandler serverEndpointHandler = new HttpServerEndpointChannelInboundHandler(responseSender, endpointDirector);
+        log.debug("Initializing HttpSocketChannelInitializer");
+        ChannelInitializer<SocketChannel> channelInitializer = new HttpSocketChannelInitializer(serverEndpointHandler);
         log.debug("Initializing SimpleNettyServer");
-        NettyServer nettyServer = new SimpleNettyServer(serverEndpointHandler);
+        NettyServer nettyServer = new SimpleNettyServer(channelInitializer);
 
         this.addShutdownHook(() -> {
             try {

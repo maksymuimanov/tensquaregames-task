@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 public class RedisAsyncCacheManager implements AsyncCacheManager {
     public static final String DEFAULT_REDIS_URL = "redis://localhost:6379";
     public static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
+    public static final String REDIS_URL_PROPERTY = "redis.url";
     private final RedisClient redisClient;
     private final StatefulRedisConnection<String, String> connection;
     private final RedisAsyncCommands<String, String> commands;
@@ -22,7 +23,7 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
     private final Duration ttl;
 
     public RedisAsyncCacheManager(ObjectMapper objectMapper) {
-        this(DEFAULT_REDIS_URL, objectMapper);
+        this(System.getProperty(REDIS_URL_PROPERTY, DEFAULT_REDIS_URL), objectMapper);
     }
 
     public RedisAsyncCacheManager(String url,
