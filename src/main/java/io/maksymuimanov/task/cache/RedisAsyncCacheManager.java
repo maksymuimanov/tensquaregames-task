@@ -5,6 +5,7 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.maksymuimanov.task.exception.CacheManagingException;
+import io.maksymuimanov.task.util.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -23,12 +24,14 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 public class RedisAsyncCacheManager implements AsyncCacheManager {
-    /** Default Redis server connection URI used when no external configuration is provided. */
-    public static final String DEFAULT_REDIS_URL = "redis://localhost:6379";
-    /** Default cache entry time-to-live (TTL), applied to all entries unless overridden. */
-    public static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
     /** System property key for customizing the Redis connection URL at runtime. */
     public static final String REDIS_URL_PROPERTY = "redis.url";
+    /** System property key for customizing the Redis cache entry time-to-live (TTL) at runtime. */
+    public static final String REDIS_TTL_PROPERTY = "redis.ttl";
+    /** Default Redis server connection URI used when no external configuration is provided. */
+    public static final String DEFAULT_REDIS_URL = ConfigUtils.getOrDefault(REDIS_URL_PROPERTY, "redis://localhost:6379");
+    /** Default cache entry time-to-live (TTL), applied to all entries unless overridden. */
+    public static final Duration DEFAULT_REDIS_TTL = ConfigUtils.getOrDefault(REDIS_TTL_PROPERTY, Duration.ofMinutes(5));
     private final RedisClient redisClient;
     private final StatefulRedisConnection<String, String> connection;
     private final RedisAsyncCommands<String, String> commands;
@@ -41,18 +44,7 @@ public class RedisAsyncCacheManager implements AsyncCacheManager {
      * @param objectMapper Jackson mapper for JSON serialization and deserialization.
      */
     public RedisAsyncCacheManager(ObjectMapper objectMapper) {
-        this(System.getProperty(REDIS_URL_PROPERTY, DEFAULT_REDIS_URL), objectMapper);
-    }
-
-    /**
-     * Creates a Redis-based cache manager with a default TTL.
-     *
-     * @param url Redis server URL.
-     * @param objectMapper Jackson mapper for JSON serialization and deserialization.
-     */
-    public RedisAsyncCacheManager(String url,
-                                  ObjectMapper objectMapper) {
-        this(url, objectMapper, DEFAULT_TTL);
+        this(DEFAULT_REDIS_URL, objectMapper, DEFAULT_REDIS_TTL);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.maksymuimanov.task.exception.ApiFetchingException;
+import io.maksymuimanov.task.util.ConfigUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -36,12 +37,18 @@ import java.util.concurrent.Executors;
 @Slf4j
 @RequiredArgsConstructor
 public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
+    /** System property key defining the HTTP protocol version used for outbound API requests. */
+    public static final String API_HTTP_VERSION_PROPERTY = "api.http.version";
+    /** System property key defining the connection timeout (in milliseconds) for establishing non-blocking HTTP connections to external APIs. */
+    public static final String API_CONNECT_TIMEOUT_PROPERTY = "api.connect.timeout";
+    /** System property key defining the total request timeout (in milliseconds)for asynchronous API calls performed by the aggregator. */
+    public static final String API_REQUEST_TIMEOUT_PROPERTY = "api.request.timeout";
     /** Default HTTP/2 client version used for non-blocking requests. */
-    public static final HttpClient.Version DEFAULT_HTTP_VERSION = HttpClient.Version.HTTP_2;
+    public static final HttpClient.Version DEFAULT_HTTP_VERSION = ConfigUtils.getOrDefault(API_HTTP_VERSION_PROPERTY, HttpClient.Version.HTTP_2);
     /** Shared executor using virtual threads for concurrent API calls. */
     public static final ExecutorService DEFAULT_HTTP_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
     /** Default connection timeout for establishing HTTP connections. */
-    public static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(3);
+    public static final Duration DEFAULT_CONNECT_TIMEOUT = ConfigUtils.getOrDefault(API_CONNECT_TIMEOUT_PROPERTY, Duration.ofSeconds(3));
     /** Default HTTP client preconfigured with timeouts and executor. */
     public static final HttpClient DEFAULT_HTTP_CLIENT = HttpClient.newBuilder()
             .version(DEFAULT_HTTP_VERSION)
@@ -49,7 +56,7 @@ public class JsonAsyncApiFetcher implements AsyncApiFetcher<JsonNode> {
             .connectTimeout(DEFAULT_CONNECT_TIMEOUT)
             .build();
     /** Default per-request timeout for external API calls. */
-    public static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofSeconds(5);
+    public static final Duration DEFAULT_REQUEST_TIMEOUT = ConfigUtils.getOrDefault(API_REQUEST_TIMEOUT_PROPERTY, Duration.ofSeconds(5));
     @NonNull
     private final HttpClient httpClient;
     @NonNull

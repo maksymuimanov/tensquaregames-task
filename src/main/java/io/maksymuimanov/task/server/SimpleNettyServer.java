@@ -1,6 +1,7 @@
 package io.maksymuimanov.task.server;
 
 import io.maksymuimanov.task.exception.NettyServerException;
+import io.maksymuimanov.task.util.ConfigUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -17,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * Initializes and manages Netty event loops, binds the server to a configured port,
  * and handles incoming HTTP traffic using the provided {@link ChannelInitializer}.
- * Ensures graceful startup and shutdown, with structured logging for observability.
+ * Ensures a graceful startup and shutdown, with structured logging for observability.
  *
  * @see NettyServer
  * @see EventLoopGroup
@@ -30,15 +31,26 @@ public class SimpleNettyServer implements NettyServer {
     public static final EventLoopGroup DEFAULT_BOSS_GROUP = new NioEventLoopGroup();
     /** Default worker thread group handling read/write I/O events. */
     public static final EventLoopGroup DEFAULT_WORKER_GROUP = new NioEventLoopGroup();
+    /** System property key defining the hostname or IP address on which the Netty server listens. */
+    public static final String SERVER_HOST_PROPERTY = "server.host";
+    /** System property key defining the TCP port used by the Netty server. */
+    public static final String SERVER_PORT_PROPERTY = "server.port";
+    /** System property key defining the server socket backlog size for pending incoming connections. */
+    public static final String SERVER_SO_BACKLOG_PROPERTY = "server.backlog";
+    /** System property key defining whether TCP keep-alive is enabled for server connections. */
+    public static final String SERVER_SO_KEEP_ALIVE_PROPERTY = "server.keep-alive";
+    /** Default hostname used by the server. */
+    public static final String DEFAULT_SERVER_HOST = ConfigUtils.getOrDefault(SERVER_HOST_PROPERTY, "localhost");
     /** Default TCP port for the HTTP server. */
-    public static final int DEFAULT_SERVER_PORT = 8080;
+    public static final int DEFAULT_SERVER_PORT = ConfigUtils.getOrDefault(SERVER_PORT_PROPERTY, 8080);
     /** Default maximum number of queued connection requests. */
-    public static final int DEFAULT_SO_BACKLOG_VALUE = 128;
+    public static final int DEFAULT_SO_BACKLOG_VALUE = ConfigUtils.getOrDefault(SERVER_SO_BACKLOG_PROPERTY, 128);
     /** Default socket option for keeping connections alive. */
-    public static final boolean DEFAULT_SO_KEEP_ALIVE_VALUE = true;
+    public static final boolean DEFAULT_SO_KEEP_ALIVE_VALUE = ConfigUtils.getOrDefault(SERVER_SO_KEEP_ALIVE_PROPERTY, true);
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ChannelInitializer<SocketChannel> socketChannelInitializer;
+    private final String host;
     private final int port;
 
     /**
@@ -47,18 +59,7 @@ public class SimpleNettyServer implements NettyServer {
      * @param socketChannelInitializer the channel initializer configuring HTTP handlers
      */
     public SimpleNettyServer(ChannelInitializer<SocketChannel> socketChannelInitializer) {
-        this(socketChannelInitializer, DEFAULT_BOSS_GROUP, DEFAULT_WORKER_GROUP);
-    }
-
-    /**
-     * Creates a server instance with custom event loops but default port.
-     *
-     * @param bossGroup boss group handling connection accepts
-     * @param workerGroup worker group handling network I/O
-     * @param socketChannelInitializer initializer configuring HTTP pipeline
-     */
-    public SimpleNettyServer(ChannelInitializer<SocketChannel> socketChannelInitializer, EventLoopGroup bossGroup, EventLoopGroup workerGroup) {
-        this(bossGroup, workerGroup, socketChannelInitializer, DEFAULT_SERVER_PORT);
+        this(DEFAULT_BOSS_GROUP, DEFAULT_WORKER_GROUP, socketChannelInitializer, DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);
     }
 
     /**
@@ -96,9 +97,9 @@ public class SimpleNettyServer implements NettyServer {
                     .childHandler(socketChannelInitializer)
                     .option(ChannelOption.SO_BACKLOG, DEFAULT_SO_BACKLOG_VALUE)
                     .childOption(ChannelOption.SO_KEEPALIVE, DEFAULT_SO_KEEP_ALIVE_VALUE);
-            ChannelFuture channelFuture = serverBootstrap.bind(port)
+            ChannelFuture channelFuture = serverBootstrap.bind(host, port)
                     .sync();
-            log.info("Netty server bound on port={}, awaiting close", port);
+            log.info("Netty server bound on [host={}; port={}], awaiting close", host, port);
             channelFuture.channel()
                     .closeFuture()
                     .sync();

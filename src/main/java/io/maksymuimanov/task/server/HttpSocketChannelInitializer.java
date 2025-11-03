@@ -1,6 +1,7 @@
 package io.maksymuimanov.task.server;
 
 import io.maksymuimanov.task.exception.HttpSocketChannelInitializingException;
+import io.maksymuimanov.task.util.ConfigUtils;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.SocketChannel;
@@ -29,12 +30,18 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 public class HttpSocketChannelInitializer extends ChannelInitializer<SocketChannel> {
-    /** Maximum size of the aggregated HTTP content in bytes. */
-    public static final int DEFAULT_MAXIMUM_CONTENT_LENGTH = Integer.MAX_VALUE;
+    /** System property key defining the maximum allowed HTTP content length (in bytes) accepted by the server. */
+    public static final String SERVER_MAX_CONTENT_LENGTH_PROPERTY = "server.max-content-length";
+    /** System property key defining the read timeout (in milliseconds) for incoming HTTP requests on the server. */
+    public static final String SERVER_READ_TIMEOUT = "server.read-timeout";
+    /** System property key defining the write timeout (in milliseconds) for sending HTTP responses from the server. */
+    public static final String SERVER_WRITE_TIMEOUT = "server.write-timeout";
+    /** Maximum size of the aggregated HTTP content in bytes. (Default: 1MB) */
+    public static final int DEFAULT_MAXIMUM_CONTENT_LENGTH = ConfigUtils.getOrDefault(SERVER_MAX_CONTENT_LENGTH_PROPERTY, 1024 * 1024);
     /** Default read timeout duration for incoming requests. */
-    public static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(10);
+    public static final Duration DEFAULT_READ_TIMEOUT = ConfigUtils.getOrDefault(SERVER_READ_TIMEOUT, Duration.ofSeconds(10));
     /** Default write timeout duration for outgoing responses. */
-    public static final Duration DEFAULT_WRITE_TIMEOUT = Duration.ofSeconds(10);
+    public static final Duration DEFAULT_WRITE_TIMEOUT = ConfigUtils.getOrDefault(SERVER_WRITE_TIMEOUT, Duration.ofSeconds(10));
     private final int maximumContentLength;
     private final Duration readTimeout;
     private final Duration writeTimeout;

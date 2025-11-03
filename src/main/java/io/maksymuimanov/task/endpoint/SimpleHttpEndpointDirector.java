@@ -58,13 +58,11 @@ public class SimpleHttpEndpointDirector implements HttpEndpointDirector {
                 AsyncHttpEndpointProcessor endpointHandler = endpointProcessors.get(httpEndpoint);
                 endpointHandler.process(context, responseSender, keepAlive)
                         .whenComplete((v, ex) -> {
-                            if (ex == null) {
+                            if (ex == null || !context.channel().isActive()) {
                                 log.info("Endpoint processing completed: method={}, path={}", httpMethod, path);
                             } else {
                                 log.error("Endpoint processing failed: method={}, path={}", httpMethod, path, ex);
-                                if (context.channel().isActive()) {
-                                    responseSender.send(context, UNEXPECTED_SERVER_ERROR_MESSAGE, HttpResponseStatus.INTERNAL_SERVER_ERROR, keepAlive);
-                                }
+                                responseSender.send(context, UNEXPECTED_SERVER_ERROR_MESSAGE, HttpResponseStatus.INTERNAL_SERVER_ERROR, keepAlive);
                             }
                         });
             } else {

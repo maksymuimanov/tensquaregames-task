@@ -1,6 +1,7 @@
 package io.maksymuimanov.task.api;
 
 import io.maksymuimanov.task.exception.ApiRequestSendingException;
+import io.maksymuimanov.task.util.ConfigUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -30,10 +31,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 public class RetryableAsyncApiRequestSender implements AsyncApiRequestSender<String> {
+    /** System property key defining the number of retry attempts for failed asynchronous API requests. */
+    public static final String API_REQUEST_RETRY_COUNT_PROPERTY = "api.request.retry.count";
+    /** System property key defining the delay (in milliseconds) between retry attempts for failed API requests. */
+    public static final String API_REQUEST_RETRY_DELAY_PROPERTY = "api.request.retry.delay";
     /** Default number of retries before giving up on a failed request. */
-    public static final int DEFAULT_RETRY_COUNT = 2;
+    public static final int DEFAULT_RETRY_COUNT = ConfigUtils.getOrDefault(API_REQUEST_RETRY_COUNT_PROPERTY, 2);
     /** Default delay between retries. */
-    public static final Duration DEFAULT_RETRY_DELAY = Duration.ofMillis(250);
+    public static final Duration DEFAULT_RETRY_DELAY = ConfigUtils.getOrDefault(API_REQUEST_RETRY_DELAY_PROPERTY, Duration.ofMillis(250));
     /** Inclusive lower bound of successful HTTP status codes. */
     public static final int HTTP_OK_STATUS = 200;
     /** Exclusive upper bound of successful HTTP status codes. */
