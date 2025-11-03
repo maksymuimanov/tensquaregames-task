@@ -7,7 +7,7 @@ A non-blocking HTTP service built with `Netty` `(Java 21)` that exposes a single
 ## Installation & Build Instructions
 
 ### Prerequisites
-- `Java 21` or newer installed (java --version)
+- `Java 21` or newer installed
 - `Redis` running locally or via `Docker`
 - `Gradle`
 
