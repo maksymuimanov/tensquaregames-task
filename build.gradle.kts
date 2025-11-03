@@ -48,11 +48,34 @@ tasks.test {
 }
 
 tasks.register<Tar>("distTarGz") {
-    archiveClassifier.set("sources")
+    group = "distribution"
+    description = "Packages the project source code into a .tar.gz archive."
+
+    archiveBaseName.set(project.name)
+    archiveClassifier.set("")
+    archiveExtension.set("tar.gz")
     compression = Compression.GZIP
+
+    destinationDirectory.set(layout.buildDirectory.dir("distributions"))
+
     from(projectDir) {
-        include("src/**", "build.gradle.kts", "settings.gradle.kts", "gradlew", "gradlew.bat", "gradle/**", "README.md")
-        exclude("**/build/**", "**/.gradle/**", ".idea/**", "**/.git/**")
+        include(
+            "src/**",
+            "build.gradle.kts",
+            "settings.gradle.kts",
+            "gradlew",
+            "gradlew.bat",
+            "gradle/**",
+            "README.md"
+        )
+        exclude(
+            "**/build/**",
+            "**/.gradle/**",
+            ".idea/**",
+            "**/.git/**",
+            "**/.DS_Store",
+            "**/out/**"
+        )
     }
 }
 
