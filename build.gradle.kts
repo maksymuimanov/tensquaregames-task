@@ -66,7 +66,9 @@ tasks.register<Tar>("distTarGz") {
             "gradlew",
             "gradlew.bat",
             "gradle/**",
-            "README.md"
+            "README.md",
+            "start.sh",
+            "start-with-redis-on-docker.sh"
         )
         exclude(
             "**/build/**",
