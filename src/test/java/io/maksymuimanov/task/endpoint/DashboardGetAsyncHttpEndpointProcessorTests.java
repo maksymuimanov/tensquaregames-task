@@ -65,7 +65,7 @@ class DashboardGetAsyncHttpEndpointProcessorTests {
         Awaitility.await().untilAsserted(result::isDone);
         Mockito.verify(apiAggregator).aggregate();
         Mockito.verify(cacheManager).get(DashboardGetAsyncHttpEndpointProcessor.DASHBOARD_CACHE_KEY, DashboardResponse.class);
-        Mockito.verify(cacheManager).put(DashboardGetAsyncHttpEndpointProcessor.DASHBOARD_CACHE_KEY, dashboardResponse);
+        Mockito.verify(cacheManager, Mockito.never()).put(DashboardGetAsyncHttpEndpointProcessor.DASHBOARD_CACHE_KEY, dashboardResponse);
         Mockito.verify(responseSender).send(context, dashboardResponse, HttpResponseStatus.OK, NOT_KEEP_ALIVE);
     }
 

@@ -99,7 +99,7 @@ public class SimpleNettyServer implements NettyServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, DEFAULT_SO_KEEP_ALIVE_VALUE);
             ChannelFuture channelFuture = serverBootstrap.bind(host, port)
                     .sync();
-            log.info("Netty server bound on [host={}; port={}], awaiting close", host, port);
+            log.info("Netty server bound on [host={}; port={}], server is ready", host, port);
             channelFuture.channel()
                     .closeFuture()
                     .sync();

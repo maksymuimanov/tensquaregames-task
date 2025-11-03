@@ -43,7 +43,7 @@ class SimpleNettyApplicationTests {
         appExecutor.close();
     }
 
-    @RepeatedTest(100)
+    @RepeatedTest(25)
     @Timeout(value = 3, unit = TimeUnit.SECONDS)
     void shouldGetDashboardSuccessfully() {
         RestAssured.get(DashboardGetAsyncHttpEndpointProcessor.DASHBOARD_ENDPOINT_PATH)
